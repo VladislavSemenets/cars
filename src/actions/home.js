@@ -33,17 +33,10 @@ export function setSubCategories(subCategories) {
     };
 }
 
-export function setSelectedSubCategories(selectedSubCategories) {
-    return {
-        type: SET_SELECTED_SUB_CATEGORIES,
-        payload: { selectedSubCategories }
-    };
-}
-
 export function loadCategories() {
     return async (dispatch) => {
         const response = await window
-            .fetch('http://localhost:3001/api/categories')
+            .fetch(`http://localhost:${process.env.REACT_APP_SERVER_PORT}/api/categories`)
             .then(response => response.json());
 
         dispatch(setCategories(response));
@@ -52,7 +45,13 @@ export function loadCategories() {
 
 export function handleSend() {
     return async (dispatch, getState) => {
-        const { home: { categoryId, selectedSubCategories, additionalFields } } = getState();
+        const {
+            home: {
+                categoryId,
+                selectedSubCategories,
+                additionalFields
+            }
+        } = getState();
 
         const data = {
             categoryId,
@@ -60,18 +59,22 @@ export function handleSend() {
             additionalFields
         };
 
-        await window.fetch('http://localhost:3001/api/save-form-data', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data),
-        }).then(() => dispatch(clearForm()))
+        await window.fetch(
+            `http://localhost:${process.env.REACT_APP_SERVER_PORT}/api/save-form-data`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            }
+        ).then(() => dispatch(clearForm()))
     }
 }
 
 export function handleChangeSubCategory({ target: { value } }) {
-    return async (dispatch) => {
-        dispatch(setSelectedSubCategories(value));
-    }
+    return {
+        type: SET_SELECTED_SUB_CATEGORIES,
+        payload: { selectedSubCategories: value }
+    };
 }
 
 export function handleChangeAdditionalField(subCategoryId, item) {
@@ -86,7 +89,7 @@ export function handleChangeCategory({ target: { value } }) {
         dispatch(setCategory(value));
 
         const response = await window
-            .fetch(`http://localhost:3001/api/sub-categories/${value}`)
+            .fetch(`http://localhost:${process.env.REACT_APP_SERVER_PORT}/api/sub-categories/${value}`)
             .then(response => response.json());
 
         dispatch(setSubCategories(response));
